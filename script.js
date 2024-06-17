@@ -67,66 +67,11 @@ const gameBoard = (() => {
         }
     }
     
-    
-    const getBestMove = () => {
-        const HUMAN_PLAYER = player.getPlayer(1).token;
-        const AI_PLAYER = player.getPlayer(2).token;
-        const minimax = (position, depth, isMaximizing) => {
-            if (checkWinner(position, HUMAN_PLAYER)) return depth - 10;
-            if (checkWinner(position, AI_PLAYER)) return 10 - depth;
-            if (!position.includes(null)) return 0;
-            
-            if (isMaximizing) {
-                let bestScore = -Infinity;
-                for (let i = 0; i < position.length; i++) {
-                    if (position[i] === null) {
-                        position[i] = AI_PLAYER;
-                        let score = minimax(position, depth + 1, false);
-                        position[i] = null;
-                        bestScore = Math.max(score, bestScore);
-                    }
-                }
-                return bestScore;
-            } else {
-                let bestScore = Infinity;
-                for (let i = 0; i < position.length; i++) {
-                    if (position[i] === null) {
-                        position[i] = HUMAN_PLAYER;
-                        let score = minimax(position, depth + 1, true);
-                        position[i] = null;
-                        bestScore = Math.min(score, bestScore);
-                    }
-                }
-                return bestScore;
-            }
-        }
-        const findBestMove = (position) => {
-            let bestScore = -Infinity;
-            let move = -1;
-            for (let i = 0; i < position.length; i++) {
-                if (position[i] === null) {
-                    position[i] = AI_PLAYER;
-                    let score = minimax(position, 0, false);
-                    position[i] = null;
-                    if (score > bestScore) {
-                        bestScore = score;
-                        move = i;
-                    }
-                }
-            }
-            return move;
-        }
-        const bestMoveIndex = findBestMove(getBoard().flat());
-        const indexArray = ['0, 0', '0, 1', '0, 2', '1, 0', '1, 1', '1, 2', '2, 0', '2, 1', '2, 2']
-        return indexArray[bestMoveIndex];
-    }
-    
     return {
         setMove,
         clearBoard,
         getBoard,
-        checkWinner,
-        getBestMove
+        checkWinner   
     }
 })();
 
@@ -178,6 +123,109 @@ const player = (() => {
         getScores
     }
 })();
+
+const computer = (() => {
+    const MOVES_ARRAY = ['0, 0', '0, 1', '0, 2', '1, 0', '1, 1', '1, 2', '2, 0', '2, 1', '2, 2']
+    const easyMove = () => {
+        const randomNumber = Math.floor(Math.random() * 10);
+        const moves = MOVES_ARRAY[randomNumber];
+        console.log(moves)
+        const movesArr = MOVES_ARRAY[randomNumber].split(', ');
+        const board = gameBoard.getBoard();
+        if (board[movesArr[0]][movesArr[1]]) {
+            return null;
+        }
+        return moves;
+    }
+    const mediumMove = () => {
+        const position = gameBoard.getBoard().flat();
+        let bestScore = -Infinity;
+            let move = -1;
+            for (let i = 0; i < position.length; i++) {
+                if (position[i] === null) {
+                    position[i] = 'O';
+                    let score = Math.max(gameBoard.checkWinner(position, 'X'), gameBoard.checkWinner(position, 'O'));
+                    position[i] = null;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = i;
+                    }
+                }
+            }
+        return MOVES_ARRAY[move];
+    }
+    const bestMove = () => {
+        const HUMAN_PLAYER = player.getPlayer(1).token;
+        const AI_PLAYER = player.getPlayer(2).token;
+        const minimax = (position, depth, isMaximizing) => {
+            if (gameBoard.checkWinner(position, HUMAN_PLAYER)) return depth - 10;
+            if (gameBoard.checkWinner(position, AI_PLAYER)) return 10 - depth;
+            if (!position.includes(null)) return 0;
+            
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < position.length; i++) {
+                    if (position[i] === null) {
+                        position[i] = AI_PLAYER;
+                        let score = minimax(position, depth + 1, false);
+                        position[i] = null;
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < position.length; i++) {
+                    if (position[i] === null) {
+                        position[i] = HUMAN_PLAYER;
+                        let score = minimax(position, depth + 1, true);
+                        position[i] = null;
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+        const findBestMove = (position) => {
+            let bestScore = -Infinity;
+            let move = -1;
+            for (let i = 0; i < position.length; i++) {
+                if (position[i] === null) {
+                    position[i] = AI_PLAYER;
+                    let score = minimax(position, 0, false);
+                    position[i] = null;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = i;
+                    }
+                }
+            }
+            return move;
+        }
+        const bestMoveIndex = findBestMove(gameBoard.getBoard().flat());
+        return MOVES_ARRAY[bestMoveIndex];
+    }
+    const getMove = difficulty => {
+        switch (difficulty) {
+            case 0:
+                console.error('Tried to get computer move while playing manual.')
+                break;
+            case 1:
+                return easyMove();
+            case 2:
+                return mediumMove();
+            case 3:
+                return bestMove();
+            default:
+                console.error('Default switch statement was called.')
+                break;
+        }
+    }
+    return {
+        getMove
+    }
+})();
+
 
 const game = (() => {
     let gameRunning = false;
@@ -234,36 +282,20 @@ const game = (() => {
             return null;
         }
     }
-    const getComputerMove = difficulty => {
-        switch (difficulty) {
-            case 0:
-                console.error('Tried to get computer move while playing manual.')
-                break;
-            case 1:
-                return validateMove(gameBoard.getBestMove());
-            case 2:
-                return validateMove(gameBoard.getBestMove());
-            case 3:
-                return validateMove(gameBoard.getBestMove());
-            default:
-                console.error('Default switch statement was called.')
-                break;
-          }
-    }
     const getMove = () => {
-        const computer = player.getPlayer(playerToMove).computer;
-        if (computer === 0){
+        const difficulty = player.getPlayer(playerToMove).computer;
+        if (difficulty === 0){
             return validateMove(prompt(player.getPlayer(playerToMove).name + ", please enter your move", '0-2, 0-2'));
         } else {
-            return getComputerMove(computer);
+            return validateMove(computer.getMove(difficulty));
         }
     };
     const checkForWin = () => {
         const board = gameBoard.getBoard();
         const token1 = player.getPlayer(1).token;
         const token2 = player.getPlayer(2).token;
-        const p1Win = gameBoard.checkWinner(board, token1)
-        const p2Win = gameBoard.checkWinner(board, token2)
+        const p1Win = gameBoard.checkWinner(board, token1);
+        const p2Win = gameBoard.checkWinner(board, token2);
 
         if (p1Win || p2Win) {
             const winner = p1Win ? token1 : token2
