@@ -1,42 +1,12 @@
-
-const Cell = () => {
-    let value = null;
-  
-    const addToken = (token) => {
-      value = token;
-    };
-
-    const removeToken = () => {
-        value = null;
-    }
-  
-    const getValue = () => value;
-  
-    return {
-      addToken,
-      removeToken,
-      getValue
-    };
-}
-
 const gameBoard = (() => {
-    const board =   [[Cell(),Cell(),Cell()],
-                    [Cell(),Cell(),Cell()],
-                    [Cell(),Cell(),Cell()]];
-    const printBoard = () => {
-        let printBoardArr = [];
-        for (let i = 0; i < board.length; i++) {
-            printBoardArr.push([]);
-            for (let j = 0; j < board[0].length; j++) {
-                printBoardArr[i].push(board[i][j].getValue());
-            }
-        }
-        return printBoardArr;
-    };
+    const board =   [[null,null,null],
+                    [null,null,null],
+                    [null,null,null]];
+    
     const setMove = (movesArr, token) => {
         if (movesArr){
-            board[movesArr[0]][movesArr[1]].addToken(token);
-            console.table(printBoard());
+            board[movesArr[0]][movesArr[1]] = token;
+            console.table(getBoard());
         } else {
             console.error('Invalid move');
         }
@@ -44,16 +14,21 @@ const gameBoard = (() => {
     const clearBoard = () => {
         for (let i = 0; i < board.length; i++) {
             for (let j = 0; j < board[0].length; j++) {
-                board[i][j].removeToken();
+                board[i][j] = null;
             }
         }
     };
     const getBoard = () => board;
 
     const checkWinner = (position, player) => {
-        const board =  [[position[0], position[1], position[2]],
-                        [position[3], position[4], position[5]],
-                        [position[6], position[7], position[8]]];
+        let board = [];
+        if (position.length === 9){
+            board =  [[position[0], position[1], position[2]],
+                    [position[3], position[4], position[5]],
+                    [position[6], position[7], position[8]]];
+        } else if (position.length === 3){
+            board = position;
+        }
     
         const size = board.length;
         let winner = null;
@@ -99,7 +74,7 @@ const gameBoard = (() => {
         const minimax = (position, depth, isMaximizing) => {
             if (checkWinner(position, HUMAN_PLAYER)) return depth - 10;
             if (checkWinner(position, AI_PLAYER)) return 10 - depth;
-            if (position.filter(val => val === null).length === 0) return 0;
+            if (!position.includes(null)) return 0;
             
             if (isMaximizing) {
                 let bestScore = -Infinity;
@@ -141,13 +116,12 @@ const gameBoard = (() => {
             }
             return move;
         }
-        const bestMoveIndex = findBestMove(printBoard().flat());
+        const bestMoveIndex = findBestMove(getBoard().flat());
         const indexArray = ['0, 0', '0, 1', '0, 2', '1, 0', '1, 1', '1, 2', '2, 0', '2, 1', '2, 2']
         return indexArray[bestMoveIndex];
     }
     
     return {
-        printBoard,
         setMove,
         clearBoard,
         getBoard,
@@ -252,7 +226,7 @@ const game = (() => {
         }
         const movesArr = moves.split(', ');
         if (movesArr.length === 2 && movesArr[0] >= 0 && movesArr[0] <= 2 && movesArr[1] >= 0 && movesArr[1] <= 2) {
-            if (gameBoard.printBoard()[movesArr[0]][movesArr[1]]){
+            if (gameBoard.getBoard()[movesArr[0]][movesArr[1]]){
                 return null;
             }
             return movesArr;
@@ -285,41 +259,17 @@ const game = (() => {
         }
     };
     const checkForWin = () => {
-        const board = gameBoard.printBoard();
-        const size = board.length
-        let winner = null;
+        const board = gameBoard.getBoard();
+        const token1 = player.getPlayer(1).token;
+        const token2 = player.getPlayer(2).token;
+        const p1Win = gameBoard.checkWinner(board, token1)
+        const p2Win = gameBoard.checkWinner(board, token2)
 
-        for (let i = 0; i < size; i++) {
-            if (board[i][0] && board[i].every(cell => cell === board[i][0])) {
-                winner = board[i][0];
-            }
-        }
-
-        for (let j = 0; j < size; j++) {
-            let columnWin = true;
-            for (let i = 0; i < size; i++) {
-              if (board[i][j] !== board[0][j]) {
-                columnWin = false;
-                break;
-              }
-            }
-            if (columnWin && board[0][j]) {
-              winner = board[0][j];
-            }
-        }
-
-        if (board[0][0] && board.every((row, index) => row[index] === board[0][0])) {
-            winner = board[0][0];
-        }
-
-        if (board[0][size - 1] && board.every((row, index) => row[size - 1 - index] === board[0][size - 1])) {
-            winner = board[0][size - 1];
-        }
-
-        if (winner) {
+        if (p1Win || p2Win) {
+            const winner = p1Win ? token1 : token2
             stopGame();
             player.addWin(winner);
-            console.log(`There is a winner: ${winner}`);
+            console.log(`There is a winner: ${player.getPlayerList().find(({ token }) => token === winner).name}`);
             printScoreBoard();
             return true;
         }
