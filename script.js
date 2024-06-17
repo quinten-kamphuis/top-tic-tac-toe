@@ -128,31 +128,19 @@ const computer = (() => {
     const MOVES_ARRAY = ['0, 0', '0, 1', '0, 2', '1, 0', '1, 1', '1, 2', '2, 0', '2, 1', '2, 2']
     const easyMove = () => {
         const randomNumber = Math.floor(Math.random() * 10);
-        const moves = MOVES_ARRAY[randomNumber];
-        console.log(moves)
         const movesArr = MOVES_ARRAY[randomNumber].split(', ');
         const board = gameBoard.getBoard();
         if (board[movesArr[0]][movesArr[1]]) {
             return null;
         }
-        return moves;
+        return MOVES_ARRAY[randomNumber];
     }
     const mediumMove = () => {
-        const position = gameBoard.getBoard().flat();
-        let bestScore = -Infinity;
-            let move = -1;
-            for (let i = 0; i < position.length; i++) {
-                if (position[i] === null) {
-                    position[i] = 'O';
-                    let score = Math.max(gameBoard.checkWinner(position, 'X'), gameBoard.checkWinner(position, 'O'));
-                    position[i] = null;
-                    if (score > bestScore) {
-                        bestScore = score;
-                        move = i;
-                    }
-                }
-            }
-        return MOVES_ARRAY[move];
+        const randomNumber = Math.floor(Math.random() * 3);
+        if (randomNumber === 1){
+            return easyMove();
+        }
+        return bestMove();
     }
     const bestMove = () => {
         const HUMAN_PLAYER = player.getPlayer(1).token;
