@@ -49,23 +49,122 @@ const gameBoard = (() => {
         }
     };
     const getBoard = () => board;
+
+    const checkWinner = (position, player) => {
+        const board =  [[position[0], position[1], position[2]],
+                        [position[3], position[4], position[5]],
+                        [position[6], position[7], position[8]]];
+    
+        const size = board.length;
+        let winner = null;
+    
+        for (let i = 0; i < size; i++) {
+            if (board[i][0] && board[i].every(cell => cell === board[i][0])) {
+                winner = board[i][0];
+            }
+        }
+    
+        for (let j = 0; j < size; j++) {
+            let columnWin = true;
+            for (let i = 0; i < size; i++) {
+                if (board[i][j] !== board[0][j]) {
+                columnWin = false;
+                break;
+                }
+            }
+            if (columnWin && board[0][j]) {
+                winner = board[0][j];
+            }
+        }
+    
+        if (board[0][0] && board.every((row, index) => row[index] === board[0][0])) {
+            winner = board[0][0];
+        }
+    
+        if (board[0][size - 1] && board.every((row, index) => row[size - 1 - index] === board[0][size - 1])) {
+            winner = board[0][size - 1];
+        }
+    
+        if (winner === player) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    
+    const getBestMove = () => {
+        const HUMAN_PLAYER = player.getPlayer(1).token;
+        const AI_PLAYER = player.getPlayer(2).token;
+        const minimax = (position, depth, isMaximizing) => {
+            if (checkWinner(position, HUMAN_PLAYER)) return depth - 10;
+            if (checkWinner(position, AI_PLAYER)) return 10 - depth;
+            if (position.filter(val => val === null).length === 0) return 0;
+            
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < position.length; i++) {
+                    if (position[i] === null) {
+                        position[i] = AI_PLAYER;
+                        let score = minimax(position, depth + 1, false);
+                        position[i] = null;
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < position.length; i++) {
+                    if (position[i] === null) {
+                        position[i] = HUMAN_PLAYER;
+                        let score = minimax(position, depth + 1, true);
+                        position[i] = null;
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+        const findBestMove = (position) => {
+            let bestScore = -Infinity;
+            let move = -1;
+            for (let i = 0; i < position.length; i++) {
+                if (position[i] === null) {
+                    position[i] = AI_PLAYER;
+                    let score = minimax(position, 0, false);
+                    position[i] = null;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = i;
+                    }
+                }
+            }
+            return move;
+        }
+        const bestMoveIndex = findBestMove(printBoard().flat());
+        const indexArray = ['0, 0', '0, 1', '0, 2', '1, 0', '1, 1', '1, 2', '2, 0', '2, 1', '2, 2']
+        return indexArray[bestMoveIndex];
+    }
+    
     return {
+        printBoard,
         setMove,
         clearBoard,
         getBoard,
-        printBoard
+        checkWinner,
+        getBestMove
     }
 })();
 
 const player = (() => {
     const playerList = [];
-    const createPlayer = (name, isComputer) => {
+    const createPlayer = (name, computerDifficulty) => {
         if (playerList.length < 2) {
             return playerList.push({
                 id: playerList.length + 1,
                 name: name,
                 token: playerList.length === 0 ? 'X' : 'O',
-                computer: isComputer,
+                computer: computerDifficulty,
                 wins: 0,
                 ties: 0
             })
@@ -121,13 +220,36 @@ const game = (() => {
         }
         getPlayerNames();
     };
+    const getComputerDifficulty = () => {
+        const difficulty = prompt(`Please enter the opponents difficulty.`, 'Manual, Easy, Medium or Hard').toLowerCase();
+        if (difficulty === 'manual'){
+            console.log('You are now playing against another person.')
+            return 0;
+        }
+        if (difficulty === 'easy'){
+            console.log('Computer difficulty: Easy')
+            return 1;
+        }
+        if (difficulty === 'medium'){
+            console.log('Computer difficulty: Medium')
+            return 2;
+        }
+        if (difficulty === 'hard'){
+            console.log('Computer difficulty: Hard')
+            return 3;
+        }
+    }
     const getPlayerNames = () => {
-        if (player.getPlayerList().length < 2) {
-            player.createPlayer(validatePlayerName(prompt(`Player ${player.getPlayerList().length + 1}, please enter your name`)), false)
+        const playerListLength = player.getPlayerList().length;
+        if (playerListLength < 2) {
+            player.createPlayer(validatePlayerName(prompt(`Player ${playerListLength + 1}, please enter your name`)), playerListLength < 1 ? 0 : getComputerDifficulty())
             getPlayerNames();
         }  
     };
     const validateMove = (moves) => {
+        if (!moves){
+            return null;
+        }
         const movesArr = moves.split(', ');
         if (movesArr.length === 2 && movesArr[0] >= 0 && movesArr[0] <= 2 && movesArr[1] >= 0 && movesArr[1] <= 2) {
             if (gameBoard.printBoard()[movesArr[0]][movesArr[1]]){
@@ -138,8 +260,29 @@ const game = (() => {
             return null;
         }
     }
+    const getComputerMove = difficulty => {
+        switch (difficulty) {
+            case 0:
+                console.error('Tried to get computer move while playing manual.')
+                break;
+            case 1:
+                return validateMove(gameBoard.getBestMove());
+            case 2:
+                return validateMove(gameBoard.getBestMove());
+            case 3:
+                return validateMove(gameBoard.getBestMove());
+            default:
+                console.error('Default switch statement was called.')
+                break;
+          }
+    }
     const getMove = () => {
-        return validateMove(prompt(player.getPlayer(playerToMove).name + ", please enter your move", '0-2, 0-2'));
+        const computer = player.getPlayer(playerToMove).computer;
+        if (computer === 0){
+            return validateMove(prompt(player.getPlayer(playerToMove).name + ", please enter your move", '0-2, 0-2'));
+        } else {
+            return getComputerMove(computer);
+        }
     };
     const checkForWin = () => {
         const board = gameBoard.printBoard();
@@ -176,18 +319,21 @@ const game = (() => {
         if (winner) {
             stopGame();
             player.addWin(winner);
-            console.log(`There is a winner: ${winner}`)
-            return printScoreBoard();
+            console.log(`There is a winner: ${winner}`);
+            printScoreBoard();
+            return true;
         }
 
         if (board.flat().includes(null)) {
             playerToMove === 1 ? playerToMove = 2 : playerToMove = 1;
             playGame();
+            return false;
         } else {
             stopGame();
             player.addTie();
             console.log("It's a draw.")
-            return printScoreBoard();
+            printScoreBoard();
+            return true;
         }
     }
     const printScoreBoard = () => {
