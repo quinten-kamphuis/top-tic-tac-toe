@@ -1,15 +1,18 @@
+const to2DIndex = (index) => {
+    const row = Math.floor(index / 3);
+    const col = index % 3;
+    return [row, col];
+};
+
 const gameBoard = (() => {
     const board =   [[null,null,null],
                     [null,null,null],
                     [null,null,null]];
     
-    const setMove = (movesArr, token) => {
-        if (movesArr){
-            board[movesArr[0]][movesArr[1]] = token;
-            console.table(getBoard());
-        } else {
-            console.error('Invalid move');
-        }
+    const setMove = (move, token) => {
+        const movesArr = to2DIndex(move);
+        board[movesArr[0]][movesArr[1]] = token;
+        console.table(getBoard());
     };
     const clearBoard = () => {
         for (let i = 0; i < board.length; i++) {
@@ -125,14 +128,12 @@ const player = (() => {
 })();
 
 const computer = (() => {
-    const MOVES_ARRAY = ['0, 0', '0, 1', '0, 2', '1, 0', '1, 1', '1, 2', '2, 0', '2, 1', '2, 2']
     const easyMove = () => {
         const randomNumber = Math.floor(Math.random() * 9);
-        const movesArr = MOVES_ARRAY[randomNumber].split(', ');
-        const board = gameBoard.getBoard();
-        if (board[movesArr[0]][movesArr[1]] === null) {
-            return MOVES_ARRAY[randomNumber];
-            }
+        const board = gameBoard.getBoard().flat();
+        if (board[randomNumber] === null) {
+            return randomNumber;
+        }
         return easyMove();
     }
     const mediumMove = () => {
@@ -190,8 +191,7 @@ const computer = (() => {
             }
             return move;
         }
-        const bestMoveIndex = findBestMove(gameBoard.getBoard().flat());
-        return MOVES_ARRAY[bestMoveIndex];
+        return findBestMove(gameBoard.getBoard().flat());
     }
     const getMove = difficulty => {
         let move = null;
@@ -212,7 +212,7 @@ const computer = (() => {
                 console.error('Default switch statement was called.')
                 break;
         }
-        if (!move) {
+        if (move === null) {
             console.error('Computer had an error finding a move.')
             getMove(difficulty);
         } else {
@@ -266,24 +266,23 @@ const game = (() => {
             getPlayerNames();
         }  
     };
-    const validateMove = (moves) => {
-        if (!moves){
-            return null;
+    const validateMove = (move) => {
+        if (typeof move !== 'number') {
+            console.warn('Invalid move, because not number');
+            return false;
         }
-        const movesArr = moves.split(', ');
-        if (movesArr.length === 2 && movesArr[0] >= 0 && movesArr[0] <= 2 && movesArr[1] >= 0 && movesArr[1] <= 2 && typeof movesArr[0] === 'number' && typeof movesArr[1] === 'number') {
-            if (gameBoard.getBoard()[movesArr[0]][movesArr[1]]){
-                return null;
-            }
-            return movesArr;
-        } else {
-            return null;
+        if (move < 0 || move > 8) {
+            console.warn('Invalid move, because not in range');
+            return false;
+        }    
+        if (gameBoard.getBoard().flat()[move] === null){
+            return move;
         }
     }
     const getMove = () => {
         const difficulty = player.getPlayer(playerToMove).computer;
         if (difficulty === 0){
-            return prompt(player.getPlayer(playerToMove).name + ", please enter your move", '0-2, 0-2');
+            return parseInt(prompt(player.getPlayer(playerToMove).name + ", please enter your move", '0-8'));
         } else {
             return computer.getMove(difficulty);
         }
@@ -330,10 +329,9 @@ const game = (() => {
         const token = player.getPlayer(playerToMove).token;
         if (gameRunning){
              const move = validateMove(getMove());
-             if (move) {
+             if (move !== false) {
                  gameBoard.setMove(move, token);
              } else {
-                console.warn('Invalid move.')
                 playGame();
              }
             checkForWin();
