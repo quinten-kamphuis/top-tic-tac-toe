@@ -8,6 +8,50 @@
     <script defer src="script.js"></script>
 </head>
 <body>
-        
+    <div class="game-container">
+        <div class="pane-container slim">
+            <div class="pane-header">
+    
+            </div>
+            <div class="pane scoreboard">
+                <h2>Scoreboard</h2>
+                <div id="scoreboard">
+                    <p>Quinten: 3 wins</p>
+                    <p>Computer (hard): 2 wins</p>
+                    <p>Ties: 8 ties</p>
+                </div>
+            </div>
+        </div>
+        <div class="pane-container full">
+            <div class="pane-header">
+                <h1>Tic Tac Toe</h1>
+            </div>
+            <div class="pane game">
+                <div class="game-board" id="gameBoard">
+                    <button data-index="0"></button>
+                    <button data-index="1" class="cross"></button>
+                    <button data-index="2" class="circle"></button>
+                    <button data-index="3" class="cross"></button>
+                    <button data-index="4"></button>
+                    <button data-index="5"></button>
+                    <button data-index="6" class="circle"></button>
+                    <button data-index="7"></button>
+                    <button data-index="8" class="cross"></button>
+                </div>
+            </div>
+        </div>
+        <div class="pane-container slim">
+            <div class="pane-header">
+    
+            </div>
+            <div class="pane options">
+                <h2>Options</h2>
+                <button class="button" onclick="startGame()">Start Game</button>
+                <button class="button" onclick="stopGame()">Stop Game</button>
+                <button class="button" onclick="resetGame()">Reset Game</button>
+                <button class="button" onclick="showScoreBoard()">Scoreboard</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
