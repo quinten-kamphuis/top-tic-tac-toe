@@ -194,30 +194,25 @@ const computer = (() => {
         return findBestMove(gameBoard.getBoard().flat());
     }
     const getMove = difficulty => {
-        let move = null;
+        let move;
         switch (difficulty) {
-            case 0:
-                console.error('Tried to get computer move while playing manual.')
-                break;
-            case 1:
-                move = easyMove();
-                break;
-            case 2:
-                move = mediumMove();
-                break;
-            case 3:
-                move = bestMove();
-                break;
-            default:
-                console.error('Default switch statement was called.')
-                break;
+                case 0:
+                    console.error('Tried to get computer move while playing manual.')
+                    return false;
+                case 1:
+                    move = easyMove();
+                    break;
+                case 2:
+                    move = mediumMove();
+                    break;
+                case 3:
+                    move = bestMove();
+                    break;
+                default:
+                    console.error('Default switch statement was called. Difficulty: ' + difficulty)
+                    return false;
         }
-        if (move === null) {
-            console.error('Computer had an error finding a move.')
-            getMove(difficulty);
-        } else {
-            return move;
-        }
+        return move;
     }
     return {
         getMove
@@ -228,43 +223,61 @@ const computer = (() => {
 const game = (() => {
     let gameRunning = false;
     let playerToMove = 1;
-    const validatePlayerName = (name) => {
-        if (name) {
-            if (name.length < 9) {
-                return name;
-            } else {
-                console.warn('Player name too long, must be 8 characters or less, try again.')
-            }
-        } else {
-            console.warn('Player name invalid, try again.')
-        }
-        getPlayerNames();
-    };
     const getComputerDifficulty = () => {
-        const difficulty = prompt(`Please enter the opponents difficulty.`, 'Manual, Easy, Medium or Hard').toLowerCase();
-        if (difficulty === 'manual'){
-            console.log('You are now playing against another person.')
-            return 0;
+        const promptDifficulty = () => {
+            const difficulty = prompt(`Please enter the opponents difficulty.`, 'Manual, Easy, Medium or Hard').toLowerCase();
+            if (difficulty === 'manual'){
+                console.log('You are now playing against another person.')
+                return 0;
+            }
+            if (difficulty === 'easy'){
+                console.log('Computer difficulty: Easy')
+                return 1;
+            }
+            if (difficulty === 'medium'){
+                console.log('Computer difficulty: Medium')
+                return 2;
+            }
+            if (difficulty === 'hard'){
+                console.log('Computer difficulty: Hard')
+                return 3;
+            } else {
+                console.warn('Invalid difficulty entry.')
+                return false;
+            }
         }
-        if (difficulty === 'easy'){
-            console.log('Computer difficulty: Easy')
-            return 1;
-        }
-        if (difficulty === 'medium'){
-            console.log('Computer difficulty: Medium')
-            return 2;
-        }
-        if (difficulty === 'hard'){
-            console.log('Computer difficulty: Hard')
-            return 3;
-        }
+        let computer;
+        do {
+            computer = promptDifficulty();
+        } while (typeof computer !== 'number');
+        return computer;        
     }
-    const getPlayerNames = () => {
-        const playerListLength = player.getPlayerList().length;
-        if (playerListLength < 2) {
-            player.createPlayer(validatePlayerName(prompt(`Player ${playerListLength + 1}, please enter your name`)), playerListLength < 1 ? 0 : getComputerDifficulty())
-            getPlayerNames();
-        }  
+    const getPlayers = () => {
+        if (player.getPlayerList().length === 2) return;
+        const getPlayerName = () => {
+            const promptName = () => {
+                const name = prompt(`Player ${player.getPlayerList().length + 1}, please enter your name`);
+                if (name) {
+                    if (name.length < 9) {
+                        return name;
+                    }                         
+                    console.warn('Player name too long, must be 8 characters or less, try again.')
+                    return false;
+                }
+                console.warn('Player name invalid, try again.')
+                return false;
+            }
+            let name;
+            do {
+                name = promptName();
+            } while (typeof name !== 'string');
+            return name;           
+        }
+        do {
+            const playerName = getPlayerName();
+            const difficulty = player.getPlayerList().length < 1 ? 0 : getComputerDifficulty();
+            player.createPlayer(playerName, difficulty);        
+        } while (player.getPlayerList().length < 2)
     };
     const validateMove = (move) => {
         if (typeof move !== 'number') {
@@ -327,13 +340,13 @@ const game = (() => {
     };
     const playGame = () => {
         const token = player.getPlayer(playerToMove).token;
-        if (gameRunning){
-             const move = validateMove(getMove());
-             if (move !== false) {
-                 gameBoard.setMove(move, token);
-             } else {
-                playGame();
-             }
+        if (gameRunning) {
+            let move;
+            do {
+                move = validateMove(getMove());
+            } while (typeof move !== 'number');
+    
+            gameBoard.setMove(move, token);
             checkForWin();
         } else {
             console.warn('Game is not running.')
@@ -350,8 +363,8 @@ const game = (() => {
     const startGame = () => {
         if (gameRunning){
             return console.log('Game is already running. Want to stop? Call: game.stopGame()');
-        } 
-        getPlayerNames()
+        }
+        getPlayers()
         gameRunning = true;
         playerToMove = 1;
         playGame();
@@ -363,4 +376,8 @@ const game = (() => {
         getGameRunning
     }
 })();
+
+const showScoreBoard = () => {
+    document.querySelector('.pane-container.slim').classList.toggle('hidden');
+};
 
