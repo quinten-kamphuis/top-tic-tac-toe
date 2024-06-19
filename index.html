@@ -42,6 +42,35 @@
                     <button data-index="7"></button>
                     <button data-index="8" class="cross"></button>
                 </div>
+                <form class="hidden">
+                    <div class="form-group">
+                      <label for="player1">Player 1 Name:</label>
+                      <input type="text" id="player1" name="player1" required>
+                    </div>
+                
+                    <div class="form-group">
+                      <label>
+                        <input type="checkbox" id="playAgainstComputer" name="playAgainstComputer">
+                        Play Against Computer
+                      </label>
+                    </div>
+                
+                    <div class="form-group computer-options" id="computerOptions">
+                      <label for="computerDifficulty">Computer Difficulty:</label>
+                      <select id="computerDifficulty" name="computerDifficulty">
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                      </select>
+                    </div>
+                
+                    <div class="form-group" id="player2NameGroup">
+                      <label for="player2">Player 2 Name:</label>
+                      <input type="text" id="player2" name="player2">
+                    </div>
+                
+                    <button type="submit">Start Game</button>
+                </form>
             </div>
         </div>
         <div class="pane-container slim">
@@ -50,10 +79,9 @@
             </div>
             <div class="pane options">
                 <h2>Options</h2>
-                <button class="button" onclick="startGame()">Start Game</button>
-                <button class="button" onclick="stopGame()">Stop Game</button>
-                <button class="button" onclick="resetGame()">Reset Game</button>
                 <button class="button" onclick="toggleScoreBoard()">Scoreboard</button>
+                <button class="button" onclick="newGame()">New Game</button>
+                <button class="button" onclick="otherProjects()">Other Projects</button>
             </div>
         </div>
     </div>

@@ -17,20 +17,23 @@
     --shadow-color: #ccc;
 }
 body{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--background);
     height: 100vh;
     width: 100vw;
-    /* overflow: hidden; */
+    overflow: hidden;
 }
 .game-container{
-    height: 80%;
+    max-height: 80%;
     display: flex;
     flex-direction: row;
     justify-content: center;
     gap: 20px;
     padding: 2%;
-    min-width: 1000px;
 }
 h1{
     color: var(--h1-title);
@@ -49,13 +52,13 @@ p{
     display: flex;
     flex-direction: column;
     white-space: nowrap;
+    transition: width 0.5s ease-out;
 }
-.pane-container.full{
-
+.pane-container.full .hidden{
+    display: none;
 }
 .pane-container.slim{
     width: 225px;
-    transition: width 0.5s ease-out;
     overflow: hidden;
 }
 .pane-container.slim.hidden{
@@ -78,7 +81,6 @@ p{
 .pane.scoreboard{
     flex-direction: column;
     justify-content: space-between;
-
 }
 .pane.scoreboard button{
     display: none;
@@ -86,7 +88,6 @@ p{
 .pane.game{
     flex-direction: row;
     justify-content: center;
-    flex: 2;
     padding: 50px;
 }
 .pane.options{
@@ -96,30 +97,30 @@ p{
 .game-board{
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    aspect-ratio: 1/1;
+    min-width: 500px;
     gap: 30px;
+    aspect-ratio: 1/1;
+}
+button{
+    border-radius: 2px;
+    box-shadow: 1px 1px 3px 0px var(--shadow-color);
+    cursor: pointer;
+    border: none;
+    outline: none;
 }
 .game-board button{
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: var(--game-button);
-    font-size: 2.4rem;
-    cursor: pointer;
-    border: none;
-    outline: none;
     background-repeat: no-repeat;
     background-position: center;
     background-size: 50%;
 }
 .button{
-    box-shadow: 1px 1px 3px 0px var(--shadow-color);
     background-color: var(--options-button);
     height: 30px;
     margin: 5px 0;
-    cursor: pointer;
-    border: none;
-    outline: none;
 }
 .cross {
     background-image: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48bGluZSB4MT0iNCIgeTE9IjQiIHgyPSIyMCIgeTI9IjIwIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjIiLz48bGluZSB4MT0iMjAiIHkxPSI0IiB4Mj0iNCIgeTI9IjIwIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=');
