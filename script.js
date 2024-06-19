@@ -377,7 +377,7 @@ const game = (() => {
     }
 })();
 
-const showScoreBoard = () => {
+const toggleScoreBoard = () => {
     document.querySelector('.pane-container.slim').classList.toggle('hidden');
 };
 

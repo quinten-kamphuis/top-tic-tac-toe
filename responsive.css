@@ -1,0 +1,38 @@
+@media only screen and (max-height: 700px) {
+    .game-container{
+        height: 90%;
+    }
+}
+
+@media only screen and (max-width: 1000px) {
+    .pane-container.slim{
+        transition: none;
+    }
+    .pane-container.slim.scoreboard-container{
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+    .pane-container.slim.scoreboard-container.hidden{
+        width: 0;
+    }
+    .pane.scoreboard{
+        position: relative;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        max-width: 300px;
+        max-height: 375px;
+        background-color: var(--pane);
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+    }
+    .pane.scoreboard button{
+        display: block;
+    }
+}
