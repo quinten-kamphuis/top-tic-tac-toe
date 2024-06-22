@@ -58,7 +58,7 @@ p{
     display: none;
 }
 .pane-container.slim{
-    width: 225px;
+    width: 240px;
     overflow: hidden;
 }
 .pane-container.slim.hidden{
@@ -121,6 +121,9 @@ button{
     background-color: var(--options-button);
     height: 30px;
     margin: 5px 0;
+}
+.cross, .circle{
+    cursor: default;
 }
 .cross {
     background-image: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48bGluZSB4MT0iNCIgeTE9IjQiIHgyPSIyMCIgeTI9IjIwIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjIiLz48bGluZSB4MT0iMjAiIHkxPSI0IiB4Mj0iNCIgeTI9IjIwIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=');
