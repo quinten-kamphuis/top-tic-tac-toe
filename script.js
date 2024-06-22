@@ -292,14 +292,6 @@ const game = (() => {
             return move;
         }
     }
-    const getMove = () => {
-        const difficulty = player.getPlayer(playerToMove).computer;
-        if (difficulty === 0){
-            return parseInt(prompt(player.getPlayer(playerToMove).name + ", please enter your move", '0-8'));
-        } else {
-            return computer.getMove(difficulty);
-        }
-    };
     const checkForWin = () => {
         const board = gameBoard.getBoard();
         const token1 = player.getPlayer(1).token;
@@ -318,7 +310,7 @@ const game = (() => {
 
         if (board.flat().includes(null)) {
             playerToMove === 1 ? playerToMove = 2 : playerToMove = 1;
-            playGame();
+            ui.updateUI();
             return false;
         } else {
             stopGame();
@@ -338,16 +330,21 @@ const game = (() => {
             They had ${scores.ties} games that ended in a tie.
         `);
     };
-    const playGame = () => {
-        const token = player.getPlayer(playerToMove).token;
+    const setMove = index => {
         if (gameRunning) {
-            let move;
-            do {
-                move = validateMove(getMove());
-            } while (typeof move !== 'number');
-    
-            gameBoard.setMove(move, token);
-            checkForWin();
+            const move = validateMove(index);
+            const p1 = player.getPlayer(1);
+            const p2 = player.getPlayer(2);
+
+            if (p2.computer !== 0 && playerToMove === 1){
+                gameBoard.setMove(move, p1.token);
+                if (!checkForWin()){
+                    gameBoard.setMove(computer.getMove(p2.computer), p2.token);
+                }
+            } else {
+                gameBoard.setMove(move, player.getPlayer(playerToMove).token);
+            }
+            checkForWin();            
         } else {
             console.warn('Game is not running.')
         }
@@ -365,19 +362,87 @@ const game = (() => {
             return console.log('Game is already running. Want to stop? Call: game.stopGame()');
         }
         getPlayers()
+        ui.updateUI();
         gameRunning = true;
         playerToMove = 1;
-        playGame();
     }
     const getGameRunning = () => gameRunning;
     return {
+        setMove,
         stopGame,
         startGame,
         getGameRunning
     }
 })();
 
-const toggleScoreBoard = () => {
-    document.querySelector('.pane-container.slim').classList.toggle('hidden');
-};
+const ui = (() => {
+    document.addEventListener('DOMContentLoaded', (() => {
+        const buttons = document.querySelectorAll('#gameBoard button');
+        buttons.forEach(button => {
+            const index = button.getAttribute('data-index');
+            button.addEventListener('click', () => {
+                game.setMove(index);
+            });
+        });
+    }));
+    const updateBoard = () => {
+        const buttons = document.querySelectorAll('#gameBoard button');
+        const gameBoardArr = gameBoard.getBoard().flat();
+        buttons.forEach(button => {
+            const index = button.getAttribute('data-index');
+            button.classList.remove('cross');
+            button.classList.remove('circle');
+            switch(gameBoardArr[index]){
+                case 'X':
+                    button.classList.add('cross');
+                    break;
+                case 'O':
+                    button.classList.add('circle');
+                    break;
+                case null:
+                    break;
+                default:
+                    console.error('Default switch statement was called.')
+                    break;
+            }
+        });
+    }
+    const updateScoreBoard = () =>{
+        const scores = player.getScores();
+        const p1 = player.getPlayer(1);
+        const p2 = player.getPlayer(2);
+        let difficulty;
+        if (!p2.computer){
+            difficulty = 'person';
+        } else if (p2.computer === 1){
+            difficulty = 'easy';
+        } else if (p2.computer === 2){
+            difficulty = 'medium';
+        } else if (p2.computer === 3){
+            difficulty = 'hard';
+        }
+        document.querySelector('#scoreboard').innerHTML = `
+            <p>${p1.name}: ${scores.player1} wins</p>
+            <p>${p2.difficulty === 0 ? p2.name : ("Computer (" + difficulty + ")")}: ${scores.player2} wins</p>
+            <p>Ties: ${scores.ties} ties</p>
+        `;
+    };
+    const updateUI = () => {
+        updateBoard();
+        updateScoreBoard();
+    };
+    const toggleScoreBoard = () => {
+        document.querySelector('.pane-container.slim').classList.toggle('hidden');
+    };
+    return{
+        updateUI,
+        toggleScoreBoard
+    }
+})();
 
+const newGame = () => {
+    if (game.getGameRunning()){
+        game.stopGame();
+    }
+    game.startGame();
+};
