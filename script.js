@@ -13,6 +13,7 @@ const gameBoard = (() => {
         const movesArr = to2DIndex(move);
         board[movesArr[0]][movesArr[1]] = token;
         console.table(getBoard());
+        ui.updateUI();
     };
     const clearBoard = () => {
         for (let i = 0; i < board.length; i++) {
@@ -222,6 +223,7 @@ const computer = (() => {
 
 const game = (() => {
     let gameRunning = false;
+    let winnerDeclared = false;
     let playerToMove = 1;
     const getComputerDifficulty = () => {
         const promptDifficulty = () => {
@@ -274,8 +276,8 @@ const game = (() => {
             return name;           
         }
         do {
-            const playerName = getPlayerName();
             const difficulty = player.getPlayerList().length < 1 ? 0 : getComputerDifficulty();
+            const playerName = difficulty === 0 ? getPlayerName() : 'Computer';
             player.createPlayer(playerName, difficulty);        
         } while (player.getPlayerList().length < 2)
     };
@@ -299,24 +301,27 @@ const game = (() => {
         const p1Win = gameBoard.checkWinner(board, token1);
         const p2Win = gameBoard.checkWinner(board, token2);
 
+        if (winnerDeclared) return true;
+
         if (p1Win || p2Win) {
+            winnerDeclared = true;
             const winner = p1Win ? token1 : token2
-            stopGame();
             player.addWin(winner);
             console.log(`There is a winner: ${player.getPlayerList().find(({ token }) => token === winner).name}`);
             printScoreBoard();
+            ui.updateScoreBoard();
             return true;
         }
 
         if (board.flat().includes(null)) {
             playerToMove === 1 ? playerToMove = 2 : playerToMove = 1;
-            ui.updateUI();
             return false;
         } else {
-            stopGame();
+            winnerDeclared = true;
             player.addTie();
             console.log("It's a draw.")
             printScoreBoard();
+            ui.updateScoreBoard();
             return true;
         }
     }
@@ -331,27 +336,27 @@ const game = (() => {
         `);
     };
     const setMove = index => {
-        if (gameRunning) {
-            const move = validateMove(index);
-            const p1 = player.getPlayer(1);
-            const p2 = player.getPlayer(2);
+        if (!gameRunning) return console.warn('Game is not running.')
+        if (winnerDeclared) return console.warn('Someone already won, start a new game.')
+        const move = validateMove(index);
+        const p1 = player.getPlayer(1);
+        const p2 = player.getPlayer(2);
 
-            if (p2.computer !== 0 && playerToMove === 1){
-                gameBoard.setMove(move, p1.token);
-                if (!checkForWin()){
-                    gameBoard.setMove(computer.getMove(p2.computer), p2.token);
-                }
-            } else {
-                gameBoard.setMove(move, player.getPlayer(playerToMove).token);
+        if (p2.computer !== 0 && playerToMove === 1){
+            gameBoard.setMove(move, p1.token);
+            if (!checkForWin()){
+                const computerMove = computer.getMove(p2.computer)
+                gameBoard.setMove(computerMove, p2.token);
             }
-            checkForWin();            
         } else {
-            console.warn('Game is not running.')
+            gameBoard.setMove(move, player.getPlayer(playerToMove).token);
         }
+        checkForWin();  
     };
     const stopGame = () => {
         if (gameRunning){
             gameRunning = false;
+            winnerDeclared = false;
             gameBoard.clearBoard();
         } else {
             return console.log('Game is not running. Want to start? Call: game.startGame()');
@@ -379,7 +384,7 @@ const ui = (() => {
     document.addEventListener('DOMContentLoaded', (() => {
         const buttons = document.querySelectorAll('#gameBoard button');
         buttons.forEach(button => {
-            const index = button.getAttribute('data-index');
+            const index = parseInt(button.getAttribute('data-index'));
             button.addEventListener('click', () => {
                 game.setMove(index);
             });
@@ -423,7 +428,7 @@ const ui = (() => {
         }
         document.querySelector('#scoreboard').innerHTML = `
             <p>${p1.name}: ${scores.player1} wins</p>
-            <p>${p2.difficulty === 0 ? p2.name : ("Computer (" + difficulty + ")")}: ${scores.player2} wins</p>
+            <p>${p2.computer === 0 ? p2.name : ("Computer (" + difficulty + ")")}: ${scores.player2} wins</p>
             <p>Ties: ${scores.ties} ties</p>
         `;
     };
@@ -435,6 +440,7 @@ const ui = (() => {
         document.querySelector('.pane-container.slim').classList.toggle('hidden');
     };
     return{
+        updateScoreBoard,
         updateUI,
         toggleScoreBoard
     }

@@ -71,8 +71,6 @@
         width: 0;
         height: 0;
     }
-    .pane-container.full{
-    }
     .pane-container.slim{
         width: 100%;
     }
@@ -85,6 +83,9 @@
         border-top-left-radius: 0;
         border-top-right-radius: 0;
         padding-top: 0;
+    }
+    .pane.options button{
+        height: 10px;
     }
 }@media only screen and (max-width: 400px) {
     .game-board{
